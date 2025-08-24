@@ -4,30 +4,30 @@ const { convertToCase } = require('./convertToCase/convertToCase');
 function createServer() {
   const server = http.createServer((req, res) => {
     const normalizeUrl = new URL(req.url, 'http://localhost:5700');
-    const text = normalizeUrl.pathname.slice(1);
-    const caseName = normalizeUrl.searchParams.get('toCase');
+    const textToConvert = normalizeUrl.pathname.slice(1);
+    const caseType = normalizeUrl.searchParams.get('toCase');
     const allowedCases = ['SNAKE', 'KEBAB', 'CAMEL', 'PASCAL', 'UPPER'];
 
-    if (!text || !caseName || !allowedCases.includes(caseName)) {
+    if (!textToConvert || !caseType || !allowedCases.includes(caseType)) {
       res.statusCode = 400;
       res.statusMessage = 'Bad request';
       res.setHeader('Content-Type', 'application/json');
 
       const error = { errors: [] };
 
-      if (!text) {
+      if (!textToConvert) {
         error.errors.push({
           message: `Text to convert is required. Correct request is: "/<TEXT_TO_CONVERT>?toCase=<CASE_NAME>".`,
         });
       }
 
-      if (!caseName) {
+      if (!caseType) {
         error.errors.push({
           message: `"toCase" query param is required. Correct request is: "/<TEXT_TO_CONVERT>?toCase=<CASE_NAME>".`,
         });
       }
 
-      if (!allowedCases.includes(caseName) && caseName) {
+      if (!allowedCases.includes(caseType) && caseType) {
         error.errors.push({
           message: `This case is not supported. Available cases: SNAKE, KEBAB, CAMEL, PASCAL, UPPER.`,
         });
@@ -38,7 +38,10 @@ function createServer() {
       return;
     }
 
-    const { originalCase, convertedText } = convertToCase(caseName, text);
+    const { originalCase, convertedText } = convertToCase(
+      textToConvert,
+      caseType,
+    );
 
     res.statusCode = 200;
     res.statusMessage = 'OK';
@@ -47,8 +50,8 @@ function createServer() {
     res.end(
       JSON.stringify({
         originalCase,
-        targetCase: caseName,
-        originalText: text,
+        targetCase: caseType,
+        originalText: textToConvert,
         convertedText,
       }),
     );
