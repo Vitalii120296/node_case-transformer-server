@@ -10,7 +10,7 @@ function createServer() {
 
     if (!textToConvert || !caseType || !allowedCases.includes(caseType)) {
       res.statusCode = 400;
-      res.statusMessage = 'Bad request';
+      res.statusMessage = "Bad request";
       res.setHeader('Content-Type', 'application/json');
 
       const error = { errors: [] };
@@ -44,7 +44,7 @@ function createServer() {
     );
 
     res.statusCode = 200;
-    res.statusMessage = 'OK';
+    res.statusMessage = "OK";
     res.setHeader('Content-Type', 'application/json');
 
     res.end(
