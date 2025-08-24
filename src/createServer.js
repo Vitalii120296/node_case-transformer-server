@@ -1,3 +1,55 @@
-// Write code here
-// Also, you can create additional files in the src folder
-// and import (require) them here
+const http = require('http');
+const { convertToCase } = require('./convertToCase/convertToCase');
+
+function createServer() {
+  const server = http.createServer((req, res) => {
+    const normalizeUrl = new URL(req.url, 'http://localhost:5700');
+    const text = normalizeUrl.pathname.slice(1);
+    const caseName = normalizeUrl.searchParams.get('toCase');
+    const allowedCases = ['SNAKE', 'KEBAB', 'CAMEL', 'PASCAL', 'UPPER'];
+
+    if (!text || !caseName || !allowedCases.includes(caseName)) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+
+      const error = { errors: [] };
+
+      if (!text) {
+        error.errors.push({
+          message: `Text to convert is required. Correct request is: "/<TEXT_TO_CONVERT>?toCase=<CASE_NAME>".`,
+        });
+      }
+
+      if (!caseName) {
+        error.errors.push({
+          message: `"toCase" query param is required. Correct request is: "/<TEXT_TO_CONVERT>?toCase=<CASE_NAME>".`,
+        });
+      }
+
+      if (!allowedCases.includes(caseName) && caseName) {
+        error.errors.push({
+          message: `This case is not supported. Available cases: SNAKE, KEBAB, CAMEL, PASCAL, UPPER.`,
+        });
+      }
+
+      res.end(JSON.stringify(error));
+
+      return;
+    }
+
+    let response = convertToCase(text, caseName);
+
+    response = { ...response, originalText: text, targetCase: caseName };
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+
+    res.end(JSON.stringify(response));
+  });
+
+  return server;
+}
+
+module.exports = {
+  createServer,
+};
