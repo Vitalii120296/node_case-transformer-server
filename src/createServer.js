@@ -10,6 +10,7 @@ function createServer() {
 
     if (!text || !caseName || !allowedCases.includes(caseName)) {
       res.statusCode = 400;
+      res.statusMessage = 'Bad request';
       res.setHeader('Content-Type', 'application/json');
 
       const error = { errors: [] };
@@ -37,14 +38,20 @@ function createServer() {
       return;
     }
 
-    let response = convertToCase(text, caseName);
-
-    response = { ...response, originalText: text, targetCase: caseName };
+    const { originalCase, convertedText } = convertToCase(text, caseName);
 
     res.statusCode = 200;
+    res.statusMessage = 'OK';
     res.setHeader('Content-Type', 'application/json');
 
-    res.end(JSON.stringify(response));
+    res.end(
+      JSON.stringify({
+        originalCase,
+        targetCase: caseName,
+        originalText: text,
+        convertedText,
+      }),
+    );
   });
 
   return server;
